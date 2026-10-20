@@ -1,0 +1,10 @@
+[project]
+name="openreview"
+version="0.0.1"
+
+[dependency-groups]
+dev = [
+    "dill>=0.4.1",
+    "openreview-py>=1.55.0",
+    "thefuzz[speedup]>=0.22.1",
+]

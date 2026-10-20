@@ -11,49 +11,37 @@ pip install -r requirements.txt # install requirements
 cp config.py.example config.py # enter your OpenReview credentials in config.py
 ```
 
-## Example
-```python
-from scraper import Scraper
-from extract import Extractor
-from filters import title_filter, keywords_filter, abstract_filter
-from selector import Selector
-from utils import save_papers, load_papers
+## Run
 
+Edit the conferences, years, keywords, and output filename in `run.py`, then run:
 
-years = [
-    '2024'
-]
-conferences = [
-    'ICLR'
-]
-keywords = [
-    'generalization'
-]
-
-def modify_paper(paper):
-  paper.forum = f"https://openreview.net/forum?id={paper.forum}"
-  paper.content['pdf'] = f"https://openreview.net{paper.content['pdf']}"
-  return paper
-
-# what fields to extract
-extractor = Extractor(fields=['forum'], subfields={'content':['title', 'keywords', 'abstract', 'pdf', 'match']})
-
-# if you want to select papers manually among the scraped papers
-# selector = Selector()
-
-# select all scraped papers
-selector = None
-
-scraper = Scraper(conferences=conferences, years=years, keywords=keywords, extractor=extractor, fpath='example.csv', fns=[modify_paper], selector=selector)
-
-# adding filters to filter on
-scraper.add_filter(title_filter)
-scraper.add_filter(keywords_filter)
-scraper.add_filter(abstract_filter)
-
-scraper()
-
-# if you want to save scraped papers as OpenReview objects using pickle
-save_papers(scraper.papers, fpath='papers.pkl')
-saved_papers = load_papers(fpath='papers.pkl')
+```bash
+python run.py
 ```
+
+Results are saved in `outputs/`. By default, only accepted papers are retrieved.
+
+## Code layout
+
+- `run.py`: search settings and the `get_papers_by_year` entry point.
+- `src/scraper.py`: API clients, venue and paper retrieval, official review replies, extraction, optional manual selection, and CSV/pickle storage.
+- `src/filters.py`: keyword matching against titles, abstracts, and paper keywords.
+- `config.py`: local OpenReview credentials (copy from `config.py.example`).
+
+## Use from Python
+
+```python
+from run import get_papers_by_year
+
+get_papers_by_year(
+    venues=["ICLR"],
+    years=["2025"],
+    keywords=["generalization"],
+    fout="generalization.csv",
+)
+```
+
+For custom pipelines, import `Scraper`, `Extractor`, `Selector`, `save_papers`,
+and `load_papers` from `src.scraper`. Filters remain available from `src.filters`.
+Each exported paper includes a `reviews` field with the visible official review
+content and signatures returned by OpenReview.
